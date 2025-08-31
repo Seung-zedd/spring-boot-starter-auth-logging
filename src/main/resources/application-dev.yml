@@ -1,0 +1,38 @@
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # JPA 설정 (dev: update로 데이터 유지)
+  jpa:
+    hibernate:
+      ddl-auto: update  # 기존 테이블 업데이트
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  # 데이터베이스 설정 (postgreSQL)
+
+  # 카카오 로그인 설정
+
+# JWT 설정
+jwt:
+  secret: ${DEV_JWT_SECRET}
+  access-token-expiration-in-seconds: 3600
+  refresh-token-expiration-in-seconds: 604800
+
+# Swagger 설정(운영 환경에서는 비활성화)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Logging for debugging database connection
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.jdbc.datasource: DEBUG
+    org.springframework.core.env: DEBUG
+    org.springframework.boot.context.properties: DEBUG
