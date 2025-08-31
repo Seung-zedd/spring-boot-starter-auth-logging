@@ -15,6 +15,16 @@ spring:
 
 
   # 카카오 로그인 설정 (Production 앱 키, provider는 common에서 상속)
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${PROD_KAKAO_REST_API_KEY}
+            client-secret: ${PROD_KAKAO_CLIENT_SECRET}
+            redirect-uri: https://yourdomain.com/auth/kakao/callback
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
 
 # jwt 설정 (보안 강화)
 jwt:
