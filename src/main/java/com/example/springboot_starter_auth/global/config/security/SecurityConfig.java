@@ -1,5 +1,7 @@
 package com.example.springboot_starter_auth.global.config.security;
 
+import com.example.springboot_starter_auth.global.auth.handler.OAuth2FailureHandler;
+import com.example.springboot_starter_auth.global.auth.handler.OAuth2SuccessHandler;
 import com.example.springboot_starter_auth.global.auth.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Value("${spring.profiles.active:local}")  // 기본 local
     private String activeProfile;
@@ -71,7 +75,11 @@ public class SecurityConfig {
                             // 카카오 로그인 처리 API 경로는 인증 없이 모두 허용
                             .requestMatchers("/auth/kakao/callback").permitAll()
                             .requestMatchers("/auth/kakao/login-url").permitAll()
-                            .requestMatchers("/api/check-auth").permitAll();
+                            .requestMatchers("/api/check-auth").permitAll()
+                            
+                            // OAuth2 로그인 경로 허용
+                            .requestMatchers("/oauth2/**").permitAll()
+                            .requestMatchers("/login/oauth2/**").permitAll();
 
                     // 테스트용 인증 API 허용
                     // local 환경에서만 공개
@@ -96,7 +104,14 @@ public class SecurityConfig {
 
                 })
 
-                //* 5. (중요) 우리가 직접 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
+                // 5. OAuth2 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/main.html")  // 커스텀 로그인 페이지
+                        .successHandler(oAuth2SuccessHandler)  // 성공 핸들러
+                        .failureHandler(oAuth2FailureHandler)  // 실패 핸들러
+                )
+
+                //* 6. (중요) 우리가 직접 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
