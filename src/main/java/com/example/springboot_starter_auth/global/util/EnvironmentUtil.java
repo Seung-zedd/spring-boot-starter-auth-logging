@@ -24,8 +24,9 @@ public class EnvironmentUtil {
 
 
     public boolean isHttpEnvironment() {
-        return Arrays.asList(environment.getActiveProfiles()).contains("local") ||
-               Arrays.asList(environment.getActiveProfiles()).contains("dev");
+        // Local: HTTP, Dev/Prod: HTTPS
+        // dev is used for integrated web server test with HTTPS
+        return Arrays.asList(environment.getActiveProfiles()).contains("local");
     }
 
 }

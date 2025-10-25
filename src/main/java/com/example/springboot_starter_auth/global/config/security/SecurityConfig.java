@@ -117,19 +117,44 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // CORS 세부 설정 (허용 origin, method 등)
+    // CORS 세부 설정 (허용 origin, method 등) - 환경별 분리
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:*", "http://localhost:3000", "http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));  // OPTIONS 명시 허용 (preflight)
-        configuration.setAllowedHeaders(List.of("*"));  // 모든 헤더 허용
-        configuration.setAllowCredentials(true);  // 쿠키/credentials 허용
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));  // 노출 헤더 추가 (필요 시)
-        configuration.setMaxAge(3600L);  // preflight 캐시 시간 (1시간)
+
+        // 환경별 허용 origin 설정
+        List<String> allowedOrigins = new ArrayList<>();
+        List<String> allowedOriginPatterns = new ArrayList<>();
+
+        if ("dev".equals(activeProfile) || "local".equals(activeProfile)) {
+            // Local 환경: HTTP localhost 패턴 허용
+            allowedOriginPatterns.add("http://localhost:*");
+            allowedOriginPatterns.add("http://127.0.0.1:*");
+            // Dev 환경: 통합 웹 서버 테스트용 HTTPS origin 추가
+            allowedOrigins.add("https://yourdomain.com");
+            allowedOrigins.add("https://www.yourdomain.com");
+        } else {
+            // Prod 환경: HTTPS만 허용
+            allowedOrigins.add("https://yourdomain.com");
+            allowedOrigins.add("https://www.yourdomain.com");
+        }
+
+        // 설정 적용
+        if (!allowedOrigins.isEmpty()) {
+            configuration.setAllowedOrigins(allowedOrigins);
+        }
+        if (!allowedOriginPatterns.isEmpty()) {
+            configuration.setAllowedOriginPatterns(allowedOriginPatterns);
+        }
+
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(List.of("*"));              // 모든 헤더 허용
+        configuration.setAllowCredentials(true);                    // 쿠키/credentials 허용
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setMaxAge(3600L);                             // preflight 캐시 시간 (1시간)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // 모든 경로에 적용
+        source.registerCorsConfiguration("/**", configuration);     // 모든 경로에 적용
         return source;
     }
 
